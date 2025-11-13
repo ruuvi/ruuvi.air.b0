@@ -68,20 +68,7 @@ set(B0_VERSION_CUSTOMIZATION
   "//#include;\\\"b0_version_extra.h\\\";"
 )
 
-set(GENERATED_VERSION_BIN "${CMAKE_CURRENT_BINARY_DIR}/VERSION")
 set(GENERATED_VERSION "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
-# Generate VERSION on every build (ALWAYS re-run keeps it current w/ HEAD and dirty state)
-add_custom_target(gen_version_always ALL
-  COMMAND ${CMAKE_COMMAND} -DOUT=${GENERATED_VERSION_BIN}
-                           -DWORKDIR=${TAG_WORK_DIR}
-                           -DTAG_PREFIX=${TAG_PREFIX}
-                           -P ${MOD_DIR}/gen_version.cmake
-  # Sync to source tree only if content changed
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          "${GENERATED_VERSION_BIN}" "${GENERATED_VERSION}"
-  COMMENT "Generating VERSION (always) and syncing if changed"
-  VERBATIM
-)
 
 set(VH ${PROJECT_BINARY_DIR}/include/generated/app_version.h)
 set(MYVH ${PROJECT_BINARY_DIR}/include/generated/app_version.generated.h)
@@ -98,7 +85,7 @@ add_custom_command(
     -DAPP_BUILD_VERSION=${B0_BUILD_VERSION}
     -DCMAKE_MODULE_PATH=${MOD_DIR}
     -P ${ZEPHYR_BASE}/cmake/gen_version_h.cmake
-  DEPENDS gen_version_always ${GENERATED_VERSION} ${git_dependency}
+  DEPENDS ${GENERATED_VERSION} ${git_dependency}
   COMMAND_EXPAND_LISTS
 )
 
@@ -114,7 +101,7 @@ add_custom_target(override_version_h ALL
   DEPENDS ${MYVH}.stamp)
 
 # Make the Zephyr 'app' target depend on the VERSION file and generted header
-add_dependencies(app gen_version_always override_version_h)
+add_dependencies(app override_version_h)
 
 
 target_sources(app PRIVATE

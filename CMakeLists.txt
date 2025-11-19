@@ -132,7 +132,7 @@ target_sources(app PRIVATE
 target_include_directories(app PRIVATE
     ${ZEPHYR_BASE}/kernel/include
     ${ARCH_DIR}/${ARCH}/include
-    ../src_bootloader
+    ../include
 )
 
 target_link_options(app PUBLIC

@@ -12,6 +12,11 @@
 
 LOG_MODULE_DECLARE(B0, LOG_LEVEL_INF);
 
+#define DELAY_BEFORE_REBOOT_MS       100
+#define LED_FLASH_DURATION_MS        100
+#define BUTTON_PRESS_CHECK_PERIOD_MS 100
+#define DELAY_BETWEEN_BLINKS_MS      900
+
 static bool
 check_if_button_released_and_pressed(bool* p_is_button_released)
 {
@@ -29,7 +34,7 @@ check_if_button_released_and_pressed(bool* p_is_button_released)
         if (b0_button_get())
         {
             LOG_INF("B0: Button is pressed - reboot");
-            b0_sleep_ms(100);
+            b0_sleep_ms(DELAY_BEFORE_REBOOT_MS);
             return true;
         }
     }
@@ -50,21 +55,21 @@ b0_led_err_blink_red_led(const uint32_t num_red_blinks)
         for (uint32_t i = 0; i < num_red_blinks; ++i)
         {
             b0_led_red_on();
-            b0_sleep_ms(100);
+            b0_sleep_ms(LED_FLASH_DURATION_MS);
             if (check_if_button_released_and_pressed(&is_button_released))
             {
                 sys_reboot(SYS_REBOOT_COLD);
             }
             b0_led_red_off();
-            b0_sleep_ms(100);
+            b0_sleep_ms(BUTTON_PRESS_CHECK_PERIOD_MS);
             if (check_if_button_released_and_pressed(&is_button_released))
             {
                 sys_reboot(SYS_REBOOT_COLD);
             }
         }
-        for (int i = 0; i < 9; ++i)
+        for (int32_t i = 0; i < (DELAY_BETWEEN_BLINKS_MS / BUTTON_PRESS_CHECK_PERIOD_MS); ++i) // NOSONAR
         {
-            b0_sleep_ms(100);
+            b0_sleep_ms(BUTTON_PRESS_CHECK_PERIOD_MS);
             if (check_if_button_released_and_pressed(&is_button_released))
             {
                 sys_reboot(SYS_REBOOT_COLD);

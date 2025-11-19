@@ -18,15 +18,21 @@
 #include "b0_segger_rtt.h"
 #include "b0_led_err.h"
 #include "b0_sleep.h"
+#include "ruuvi_fa_id.h"
 #include "app_version.h"
 #include "ncs_version.h"
 #include "ncs_commit.h"
 #include "version.h"
 #include "zephyr_commit.h"
+#include "zephyr_api.h"
 
 LOG_MODULE_REGISTER(B0, LOG_LEVEL_INF);
 
 #define BOOT_MODE_TYPE_FACTORY_RESET (0xAC)
+
+#define DELAY_ACTIVATE_FACTORY_RECOVERY_MS (10 * 1000)
+
+#define SHARED_NODE DT_NODELABEL(shared_sram)
 
 _Static_assert(PM_B0_SIZE == PM_B0_EXT_SIZE, "b0 size must be equal to b0_ext size");
 _Static_assert(PM_PROVISION_SIZE == PM_PROVISION_EXT_SIZE, "provision size must be equal to provision_ext size");
@@ -38,10 +44,6 @@ _Static_assert(
 _Static_assert(
     PM_MCUBOOT_SECONDARY_SIZE == PM_MCUBOOT_SECONDARY_EXT_SIZE,
     "mcuboot_secondary size must be equal to mcuboot_secondary_ext size");
-
-#define DELAY_ACTIVATE_FACTORY_RECOVERY_MS (10 * 1000)
-
-#define SHARED_NODE DT_NODELABEL(shared_sram)
 
 _Static_assert(PM_S0_SIZE == PM_S1_SIZE, "PM_S0_SIZE must be equal to PM_S1_SIZE");
 /* MCUboot can call crypto functions shared by B0 and this reserved memory area
@@ -83,7 +85,7 @@ check_and_handle_button_press(bool* const p_flag_activate_fw_loader)
             return false;
         }
 
-        const uint32_t delta = k_uptime_get() - timestamp;
+        const uint32_t delta = k_uptime_get_32() - timestamp;
 
         if (delta >= DELAY_ACTIVATE_FACTORY_RECOVERY_MS)
         {
@@ -95,11 +97,11 @@ check_and_handle_button_press(bool* const p_flag_activate_fw_loader)
 }
 
 static bool
-check_img_in_ext_flash(const int fa_id, const char* fa_name)
+check_img_in_ext_flash(const fa_id_t fa_id, const char* fa_name)
 {
     static uint8_t           img_header_buf[FW_INFO_OFFSET4 + sizeof(struct fw_info)];
     const struct flash_area* p_fa = NULL;
-    int                      rc   = flash_area_open(fa_id, &p_fa);
+    int32_t                  rc   = flash_area_open(fa_id, &p_fa);
     if (0 != rc)
     {
         LOG_ERR("Failed to open flash area %d (%s), rc=%d", fa_id, fa_name, rc);
@@ -151,9 +153,9 @@ check_images_in_ext_flash(void)
 
 static bool
 copy_img_from_ext_flash_to_int_flash(
-    const int         fa_id_src,
+    const fa_id_t     fa_id_src,
     const char* const p_fa_src_name,
-    const int         fa_id_dst,
+    const fa_id_t     fa_id_dst,
     const char* const p_fa_dst_name)
 {
     LOG_INF(
@@ -176,12 +178,12 @@ copy_img_from_ext_flash_to_int_flash(
 }
 
 static bool
-flash_erase(const int fa_id, const char* const p_fa_name)
+flash_erase(const fa_id_t fa_id, const char* const p_fa_name)
 {
     LOG_INF("Erase flash area: %d (%s)", fa_id, p_fa_name);
 
     const struct flash_area* p_fa = NULL;
-    int                      rc   = flash_area_open(fa_id, &p_fa);
+    int32_t                  rc   = flash_area_open(fa_id, &p_fa);
     if (rc < 0)
     {
         LOG_ERR("FAIL: unable to find flash area %d: %d", fa_id, rc);
@@ -255,7 +257,7 @@ factory_fw_recovery(void)
     }
     LOG_INF("B0: Factory firmware recovered successfully");
 
-    int rc = bootmode_set(BOOT_MODE_TYPE_FACTORY_RESET);
+    zephyr_api_ret_t rc = bootmode_set(BOOT_MODE_TYPE_FACTORY_RESET);
     if (0 != rc)
     {
         LOG_ERR("bootmode_set failed, rc=%d", rc);
@@ -270,17 +272,17 @@ factory_fw_recovery(void)
         b0_led_red_and_green_on();
         while (b0_button_get())
         {
-            b0_sleep_ms(10);
+            b0_sleep_ms(10); // NOSONAR
         }
         b0_led_red_and_green_off();
     }
 
     LOG_INF("B0: Rebooting...");
-    b0_sleep_ms(500);
+    b0_sleep_ms(500); // NOSONAR
     sys_reboot(SYS_REBOOT_COLD);
 }
 
-int
+int // NOSONAR: Zephyr API
 soc_late_init_hook(void)
 {
     LOG_INF("### B0: Version: %s (FwInfoCnt: %u)", APP_VERSION_EXTENDED_STRING, CONFIG_FW_INFO_FIRMWARE_VERSION);
@@ -309,7 +311,7 @@ soc_late_init_hook(void)
     if (flag_activate_fw_loader)
     {
         LOG_INF("B0: Activate fw_loader mode");
-        int rc = bootmode_set(BOOT_MODE_TYPE_BOOTLOADER);
+        zephyr_api_ret_t rc = bootmode_set(BOOT_MODE_TYPE_BOOTLOADER);
         if (0 != rc)
         {
             LOG_ERR("bootmode_set failed, rc=%d", rc);
@@ -321,7 +323,7 @@ soc_late_init_hook(void)
     /* The protection will be performed by the main function in ~/ncs/v2.8.0/nrf/samples/bootloader/src/main.c */
 
 #if defined(CONFIG_USE_SEGGER_RTT)
-    b0_sleep_ms(500);
+    b0_sleep_ms(500); // NOSONAR
 #endif
 
     return 0;

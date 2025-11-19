@@ -11,6 +11,6 @@ b0_sleep_ms(uint32_t ms)
 #ifdef CONFIG_MULTITHREADING
     k_sleep(K_MSEC(ms));
 #else
-    k_busy_wait(ms * 1000);
+    k_busy_wait(ms * 1000); // NOSONAR
 #endif
 }

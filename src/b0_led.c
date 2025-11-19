@@ -41,9 +41,13 @@ static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(LED_GREEN_NODE, gp
 #define LED_RED_PIN   NRF_DT_GPIOS_TO_PSEL(LED_RED_NODE, gpios)
 #define LED_GREEN_PIN NRF_DT_GPIOS_TO_PSEL(LED_GREEN_NODE, gpios)
 
-#define LED_RED_FLAGS        DT_GPIO_FLAGS(LED_RED_NODE, gpios)
-#define LED_GREEN_FLAGS      DT_GPIO_FLAGS(LED_GREEN_NODE, gpios)
-#define IS_ACTIVE_LOW(flags) ((flags) & GPIO_ACTIVE_LOW)
+#define LED_RED_FLAGS   DT_GPIO_FLAGS(LED_RED_NODE, gpios)
+#define LED_GREEN_FLAGS DT_GPIO_FLAGS(LED_GREEN_NODE, gpios)
+static inline bool
+is_active_low(const uint32_t flags)
+{
+    return flags & GPIO_ACTIVE_LOW;
+}
 
 static const nrfx_timer_t  s_timer  = NRFX_TIMER_INSTANCE(4);  // TIMER4
 static const nrfx_gpiote_t s_gpiote = NRFX_GPIOTE_INSTANCE(0); // GPIOTE0
@@ -60,7 +64,7 @@ b0_led_init_gpio(const struct gpio_dt_spec* p_led_spec)
         return;
     }
 
-    const int rc = gpio_pin_configure_dt(p_led_spec, GPIO_OUTPUT_INACTIVE);
+    const int32_t rc = gpio_pin_configure_dt(p_led_spec, GPIO_OUTPUT_INACTIVE);
     if (0 != rc)
     {
         LOG_ERR("Failed to configure LED %s:%d, rc %d", p_led_spec->port->name, p_led_spec->pin, rc);
@@ -86,7 +90,7 @@ b0_led_deinit_gpio(const struct gpio_dt_spec* p_led_spec)
 
     gpio_pin_set_dt(p_led_spec, 0);
 
-    const int rc = gpio_pin_configure_dt(p_led_spec, GPIO_DISCONNECTED);
+    const int32_t rc = gpio_pin_configure_dt(p_led_spec, GPIO_DISCONNECTED);
     if (0 != rc)
     {
         LOG_ERR("Failed to configure LED %s:%d, rc %d", p_led_spec->port->name, p_led_spec->pin, rc);
@@ -140,9 +144,9 @@ gpiote_setup(void)
 
     // Initial LED states: RED = ON, GREEN = OFF
     // Respect active-low: ON = LOW if active-low, else HIGH.
-    const nrf_gpiote_outinit_t red_init   = IS_ACTIVE_LOW(LED_RED_FLAGS) ? NRF_GPIOTE_INITIAL_VALUE_LOW
+    const nrf_gpiote_outinit_t red_init   = is_active_low(LED_RED_FLAGS) ? NRF_GPIOTE_INITIAL_VALUE_LOW
                                                                          : NRF_GPIOTE_INITIAL_VALUE_HIGH;
-    const nrf_gpiote_outinit_t green_init = IS_ACTIVE_LOW(LED_GREEN_FLAGS) ? NRF_GPIOTE_INITIAL_VALUE_HIGH
+    const nrf_gpiote_outinit_t green_init = is_active_low(LED_GREEN_FLAGS) ? NRF_GPIOTE_INITIAL_VALUE_HIGH
                                                                            : NRF_GPIOTE_INITIAL_VALUE_LOW;
 
     // Task configs: use the allocated channels, TOGGLE polarity
@@ -280,14 +284,22 @@ b0_led_stop_blinking(void)
     // Force LEDs off before handover
     nrf_gpio_cfg_output(LED_GREEN_PIN);
     nrf_gpio_cfg_output(LED_RED_PIN);
-    if (IS_ACTIVE_LOW(LED_GREEN_FLAGS))
+    if (is_active_low(LED_GREEN_FLAGS))
+    {
         nrf_gpio_pin_set(LED_GREEN_PIN);
+    }
     else
+    {
         nrf_gpio_pin_clear(LED_GREEN_PIN);
-    if (IS_ACTIVE_LOW(LED_RED_FLAGS))
+    }
+    if (is_active_low(LED_RED_FLAGS))
+    {
         nrf_gpio_pin_set(LED_RED_PIN);
+    }
     else
+    {
         nrf_gpio_pin_clear(LED_RED_PIN);
+    }
 
     gpiote_teardown();
 }

@@ -8,13 +8,14 @@
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/logging/log.h>
 #include <cmsis_gcc.h>
+#include "zephyr_api.h"
 
 LOG_MODULE_DECLARE(B0, LOG_LEVEL_INF);
 
 #define TMP_BUF_SIZE 256
 
 extern __NO_RETURN void
-on_factory_fw_recovery_fail();
+on_factory_fw_recovery_fail(void);
 
 typedef bool (*cb_img_process_t)(
     const struct flash_area* p_fa_dst,
@@ -23,14 +24,18 @@ typedef bool (*cb_img_process_t)(
     const size_t             buf_len);
 
 static bool
-img_process(const int fa_id_dst, const int fa_id_src, const bool flag_erase_dst, cb_img_process_t cb_img_process)
+img_process(
+    const fa_id_t    fa_id_dst,
+    const fa_id_t    fa_id_src,
+    const bool       flag_erase_dst,
+    cb_img_process_t cb_img_process)
 {
     static uint8_t tmp_buf1[TMP_BUF_SIZE];
 
     const struct flash_area* p_fa_dst = NULL;
     const struct flash_area* p_fa_src = NULL;
 
-    int rc = flash_area_open(fa_id_dst, &p_fa_dst);
+    int32_t rc = flash_area_open(fa_id_dst, &p_fa_dst);
     if (0 != rc)
     {
         LOG_ERR("Failed to open flash area %d, rc=%d", fa_id_dst, rc);
@@ -105,7 +110,7 @@ cb_img_write(
     const uint8_t*           p_src_img_data_buf,
     const size_t             buf_len)
 {
-    int rc = flash_area_write(p_fa_dst, offset, p_src_img_data_buf, buf_len);
+    zephyr_api_ret_t rc = flash_area_write(p_fa_dst, offset, p_src_img_data_buf, buf_len);
     if (rc != 0)
     {
         LOG_ERR("Failed to write at address 0x%08x, rc=%d", (unsigned)(p_fa_dst->fa_off + offset), rc);
@@ -123,7 +128,7 @@ cb_img_cmp(
 {
     static uint8_t tmp_buf2[TMP_BUF_SIZE];
 
-    int rc = flash_area_read(p_fa_dst, offset, tmp_buf2, buf_len);
+    zephyr_api_ret_t rc = flash_area_read(p_fa_dst, offset, tmp_buf2, buf_len);
     if (rc != 0)
     {
         LOG_ERR("Failed to read flash at address 0x%08x, rc=%d", (unsigned)(p_fa_dst->fa_off + offset), rc);
@@ -141,13 +146,13 @@ cb_img_cmp(
 }
 
 void
-btldr_img_op_copy(const int fa_id_dst, const int fa_id_src)
+btldr_img_op_copy(const fa_id_t fa_id_dst, const fa_id_t fa_id_src)
 {
     img_process(fa_id_dst, fa_id_src, true, &cb_img_write);
 }
 
 bool
-btldr_img_op_cmp(const int fa_id_dst, const int fa_id_src)
+btldr_img_op_cmp(const fa_id_t fa_id_dst, const fa_id_t fa_id_src)
 {
     return img_process(fa_id_dst, fa_id_src, false, &cb_img_cmp);
 }

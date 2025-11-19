@@ -12,6 +12,12 @@
 
 LOG_MODULE_DECLARE(B0, LOG_LEVEL_INF);
 
+#if defined(CONFIG_USE_SEGGER_RTT)
+#define RTT_DATA_SRAM_NODE DT_NODELABEL(rtt_data)
+#define RTT_DATA_SRAM_ADDR DT_REG_ADDR(RTT_DATA_SRAM_NODE)
+#define RTT_DATA_SRAM_SIZE DT_REG_SIZE(RTT_DATA_SRAM_NODE)
+#endif
+
 #define B0_ASSERT(test, fmt, ...) \
     do \
     { \
@@ -29,9 +35,9 @@ void
 b0_segger_rtt_check_data_location_and_size(void)
 {
 #if defined(CONFIG_USE_SEGGER_RTT)
-    extern uint8_t __rtt_buff_data_start[];
-    extern uint8_t __rtt_buff_data_end[];
-    const size_t   rtt_buff_size = (size_t)(__rtt_buff_data_end - __rtt_buff_data_start);
+    extern uint8_t __rtt_buff_data_start[]; // NOSONAR
+    extern uint8_t __rtt_buff_data_end[];   // NOSONAR
+    const size_t   rtt_buff_size = (size_t)((uintptr_t)__rtt_buff_data_end - (uintptr_t)__rtt_buff_data_start);
     LOG_INF("B0: RTT data address: %p", __rtt_buff_data_start);
     LOG_INF("B0: RTT data size: 0x%zx", rtt_buff_size);
     B0_ASSERT(
@@ -40,10 +46,6 @@ b0_segger_rtt_check_data_location_and_size(void)
         __rtt_buff_data_start,
         CONFIG_SRAM_BASE_ADDRESS);
     B0_ASSERT(0 == (rtt_buff_size % 0x1000), "RTT buffer size is not aligned to 4kB, size=0x%zx", rtt_buff_size);
-
-#define RTT_DATA_SRAM_NODE DT_NODELABEL(rtt_data)
-#define RTT_DATA_SRAM_ADDR DT_REG_ADDR(RTT_DATA_SRAM_NODE)
-#define RTT_DATA_SRAM_SIZE DT_REG_SIZE(RTT_DATA_SRAM_NODE)
 
     B0_ASSERT(
         (uintptr_t)__rtt_buff_data_start == RTT_DATA_SRAM_ADDR,
@@ -59,8 +61,8 @@ b0_segger_rtt_check_data_location_and_size(void)
 }
 
 void
-b0_segger_rtt_write(const void* p_buffer, const unsigned len)
+b0_segger_rtt_write(const void* p_buffer, const uint32_t len)
 {
-    const unsigned bufferIndex = 0;
+    const uint32_t bufferIndex = 0;
     SEGGER_RTT_Write(bufferIndex, p_buffer, len);
 }

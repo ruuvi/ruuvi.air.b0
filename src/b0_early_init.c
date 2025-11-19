@@ -12,7 +12,7 @@
 _Static_assert(CONFIG_RUUVI_AIR_GPIO_EXT_FLASH_POWER_ON_PRIORITY > CONFIG_GPIO_INIT_PRIORITY);
 _Static_assert(CONFIG_RUUVI_AIR_GPIO_EXT_FLASH_POWER_ON_PRIORITY < CONFIG_NORDIC_QSPI_NOR_INIT_PRIORITY);
 
-static int
+static int // NOSONAR: Zephyr init functions must return int
 b0_early_init(void)
 {
     printk("\r\n*** Ruuvi B0 Bootloader ***\r\n");

@@ -169,7 +169,7 @@ jobs:
             -e HOST_USER="$(id -un)" \
             -e HOST_GROUP="$(id -gn)" \
             -v "$HOME:$HOME" \
-            -v $GITHUB_WORKSPACE/$PROJECT_DIR:$HOME/$PROJECT_DIR
+            -v $GITHUB_WORKSPACE/$PROJECT_DIR:$HOME/$PROJECT_DIR \
             -w $HOME/$PROJECT_DIR \
             -e NCS_VERSION="${NCS_VERSION}" \
             -e PROJECT_DIR="${PROJECT_DIR}" \

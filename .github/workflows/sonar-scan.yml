@@ -191,7 +191,9 @@ jobs:
           git checkout "$GITHUB_SHA"
 
           git status
+          sleep 1
           ls -la .
+          ls -la .github/workflows
 
       - name: Prepare signing keys (host side; will be mounted read-only)
         env:
@@ -288,11 +290,6 @@ jobs:
 
               cd $HOME/ncs/${NCS_VERSION}/${PROJECT_DIR}
 
-              pwd
-              sleep 1
-              ls -la .
-              sleep 1
-
               mkdir -p build-sonar
               cd build-sonar
               build-wrapper-linux-x86-64 --out-dir ./bw-output bash ../build_ruuviair_a3_release-dev.sh --build_dir=$(realpath -m "./bw-output")
@@ -322,12 +319,6 @@ jobs:
         run: |
           set -xeuo pipefail
           cd $HOME/ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/b0_hook
-          pwd
-          ls -la
-          cat sonar-project.properties
-          ls -la ..
-          ls -la ../build-sonar
-          ls -la ../build-sonar/bw-output
           export PATH="$HOME/bin/sonar-scanner/bin:$PATH"
           which sonar-scanner
           sonar-scanner --debug \

@@ -183,6 +183,7 @@ jobs:
               source /usr/local/bin/dev-env-v2.8.0.sh
 
               pwd
+              sleep 1
               cd $HOME/$PROJECT_DIR
 
               ./scripts/clang_format_all.sh --check

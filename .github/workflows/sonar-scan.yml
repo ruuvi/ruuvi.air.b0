@@ -305,5 +305,5 @@ jobs:
           projectBaseDir: ../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/b0_hook
           args: >
             --debug
-            --define sonar.cfamily.compile-commands=../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/build-sonar/bw-output/compile_commands.json
-            --define sonar.coverageReportPaths=../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/coverage.xml
+            --define sonar.cfamily.compile-commands=../../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/build-sonar/bw-output/compile_commands.json
+            --define sonar.coverageReportPaths=../../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/coverage.xml

@@ -303,6 +303,12 @@ jobs:
         run: |
           set -xeuo pipefail
           cd $HOME/ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/b0_hook
+          pwd
+          ls -la
+          cat sonar-project.properties
+          ls -la ..
+          ls -la ../build-sonar
+          ls -la ../build-sonar/bw-output
           export PATH="$HOME/bin/sonar-scanner/bin:$PATH"
           which sonar-scanner
           sonar-scanner --debug \

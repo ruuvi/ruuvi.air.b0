@@ -178,6 +178,8 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}/b0_hook
         run: |
           set -x
+          pwd
+          ls -la .
           echo "Resetting submodule to PR commit: $GITHUB_SHA"
           git fetch origin $GITHUB_HEAD_REF || git fetch origin $GITHUB_SHA
           git checkout $GITHUB_SHA

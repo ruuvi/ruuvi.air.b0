@@ -93,7 +93,6 @@ check_and_handle_button_press(bool* const p_flag_activate_fw_loader)
         }
     }
     b0_led_red_and_green_off();
-    return true;
 }
 
 static bool
@@ -101,7 +100,7 @@ check_img_in_ext_flash(const fa_id_t fa_id, const char* fa_name)
 {
     static uint8_t           img_header_buf[FW_INFO_OFFSET4 + sizeof(struct fw_info)];
     const struct flash_area* p_fa = NULL;
-    int32_t                  rc   = flash_area_open(fa_id, &p_fa);
+    int                  rc   = flash_area_open(fa_id, &p_fa);
     if (0 != rc)
     {
         LOG_ERR("Failed to open flash area %d (%s), rc=%d", fa_id, fa_name, rc);

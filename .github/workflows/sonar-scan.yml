@@ -322,4 +322,5 @@ jobs:
           export PATH="$HOME/bin/sonar-scanner/bin:$PATH"
           which sonar-scanner
           sonar-scanner --debug \
-            --define sonar.cfamily.compile-commands=../build-sonar/bw-output/compile_commands.json
+            --define sonar.cfamily.compile-commands=../build-sonar/bw-output/compile_commands.json \
+            --define sonar.coverageReportPaths=../coverage.xml

@@ -170,20 +170,20 @@ jobs:
             -e HOST_GROUP="$(id -gn)" \
             -v "$HOME:$HOME" \
             -v $GITHUB_WORKSPACE/$PROJECT_DIR:$HOME/$PROJECT_DIR \
-            -w $HOME/$PROJECT_DIR \
+            -w $HOME \
             -e NCS_VERSION="${NCS_VERSION}" \
             -e PROJECT_DIR="${PROJECT_DIR}" \
             "${IMAGE_REF}" \
             bash -lc '
               set -xeuo pipefail
 
-              pwd
-              ls -la
-
               export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
 
               echo ">>> Init dev env"
               source /usr/local/bin/dev-env-v2.8.0.sh
+
+              pwd
+              cd $HOME/$PROJECT_DIR
 
               ./scripts/clang_format_all.sh --check
             '

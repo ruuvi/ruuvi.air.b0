@@ -18,7 +18,7 @@ static const struct gpio_dt_spec button0 = GPIO_DT_SPEC_GET(BUTTON_0_NODE, gpios
 #endif
 
 void
-b0_button_init(void)
+b0_button_init(   void)
 {
     const struct gpio_dt_spec* const p_button = &button0;
 

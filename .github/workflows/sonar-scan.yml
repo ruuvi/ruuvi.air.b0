@@ -298,12 +298,12 @@ jobs:
             '
 
       - name: SonarQube Scan ruuvi.air.b0
-        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: ../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/b0_hook
-          args: >
-            --debug
-            --define sonar.cfamily.compile-commands=../../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/build-sonar/bw-output/compile_commands.json
-            --define sonar.coverageReportPaths=../../../../ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/coverage.xml
+        run: |
+          set -xeuo pipefail
+          cd $HOME/ncs/${{ env.NCS_VERSION }}/${{ env.PROJECT_DIR }}/b0_hook
+          export PATH="$HOME/bin/sonar-scanner/bin:$PATH"
+          which sonar-scanner
+          sonar-scanner --debug \
+            --define sonar.cfamily.compile-commands=../build-sonar/bw-output/compile_commands.json

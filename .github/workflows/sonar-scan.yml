@@ -180,10 +180,18 @@ jobs:
           set -x
           pwd
           ls -la .
-          echo "Resetting submodule to PR commit: $GITHUB_SHA"
-          git fetch origin $GITHUB_HEAD_REF || git fetch origin $GITHUB_SHA
-          git checkout $GITHUB_SHA
+
+          echo "Fetching PR ref (works for forks too)"
+          git fetch origin "refs/pull/${{ github.event.pull_request.number }}/head:refs/remotes/origin/pr/${{ github.event.pull_request.number }}" || true
+
+          echo "Fetching commit SHA..."
+          git fetch origin "$GITHUB_SHA:$GITHUB_SHA" || true
+
+          echo "Checking out commit"
+          git checkout "$GITHUB_SHA"
+
           git status
+          ls -la .
 
       - name: Prepare signing keys (host side; will be mounted read-only)
         env:

@@ -168,8 +168,8 @@ jobs:
 
       - name: Checkout the code
         uses: actions/checkout@v4     # Checks-out repository under $GITHUB_WORKSPACE
-        repository: ruuvi/ruuvi.air.main
         with:
+          repository: ruuvi/ruuvi.air.main
           path: ${{ env.PROJECT_DIR }}
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
           submodules: true

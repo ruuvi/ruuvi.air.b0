@@ -320,7 +320,7 @@ soc_late_init_hook(void)
 
     LOG_INF("B0: Protect B0 flash at address 0x%08x, size 0x%x bytes", PM_B0_ADDRESS, PM_B0_SIZE);
     LOG_INF("B0: Protect provision area at address 0x%08x, size 0x%x bytes", PM_PROVISION_ADDRESS, PM_PROVISION_SIZE);
-    /* The protection will be performed by the main function in ~/ncs/v2.8.0/nrf/samples/bootloader/src/main.c */
+    /* The protection will be performed by the main function in ~/ncs/<VERSION>/nrf/samples/bootloader/src/main.c */
 
 #if defined(CONFIG_USE_SEGGER_RTT)
     b0_sleep_ms(500); // NOSONAR
